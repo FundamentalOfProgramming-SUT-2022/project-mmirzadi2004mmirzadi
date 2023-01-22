@@ -1,7 +1,8 @@
 #include "validation.c"
 
 
-void get_input(char a[]){
+
+char get_input(char a[]){
     a[0]='\0';
     memset(a,0,strlen(a));
     char g,k;
@@ -17,7 +18,7 @@ void get_input(char a[]){
                 k=getchar();
                 if(k==' '||k=='\n'){
                         a[len]='\0';
-                    return;
+                    return k;
                 }else{
                     a[len]=g;
                     len++;
@@ -41,7 +42,7 @@ void get_input(char a[]){
             g=getchar();
             if(g==' '||g=='\n'){
                     a[len]='\0';
-                    return;
+                    return g;
 
             }
 
@@ -55,9 +56,18 @@ void get_input(char a[]){
 
 void get_switch(){
     char g;
+    char check;
+    while(1){
+    if(g=='\n'){
+        return;
+    }
+
     int len=0;
     do{
     g=getchar();
+    if(g=='\n'){
+        return;
+    }
     }while(g==' ');
     char type[15];
     memset(type,0,strlen(type));
@@ -69,8 +79,22 @@ void get_switch(){
     }
     type[len]='\0';
     if(!strcmp(type,"--file")){
-        get_input(SFILE);
+        check=get_input(SFILE);
+        char root[15];
+        strcpy(root,  "root/");
+        strcpy(SFILE,strcat(root,SFILE));
+    }else if(!strcmp(type,"--str")){
+        check=get_input(SSTR);
 
+
+
+    }else if(!strcmp(type,"--pos")){
+        scanf("%d:%d",&SPOS[0],&SPOS[1]);
+
+    }
+    if(check=='\n'){
+        return;
+    }
     }
 
 }
@@ -98,15 +122,15 @@ int make_dirs(){
     dirs[0]='\0';
 
     dirs[strlen(dirs)]='\0';
-    char root[15];
-    strcpy(root,  "root/");
-    strcpy(dirs,root);
-    dirs[strlen(dirs)]='\0';
+    int first=1;
     for(int i=0;i<strlen(SFILE);i++){
 
         if(SFILE[i]=='/'){
-                printf("____%s___",dirs);
-                mkdir(dirs);
+            if(!first){
+
+            mkdir(dirs);}
+            first=0;
+
         }
         dirs[strlen(dirs)]=SFILE[i];
 
@@ -114,4 +138,60 @@ int make_dirs(){
     return 1;
 }
 
+long get_file_str(){
 
+
+    long length;
+    FILE * nfile = fopen (SFILE, "rb");
+
+    if (nfile)
+    {
+      fseek (nfile, 0, SEEK_END);
+      length = ftell (nfile);
+      fseek (nfile, 0, SEEK_SET);
+      in_file = malloc (length);
+      if (in_file)
+      {
+        fread (in_file, 1, length, nfile);
+      }
+      fclose (nfile);
+    }
+return length;
+}
+
+
+long find_pos(){
+    long length=get_file_str();
+
+    long counter=1,save=-1;
+
+    for(int i=0;i<length;i++){
+        if(in_file[i]=='\n'){
+            counter++;
+        }
+        if(counter>=SPOS[0]){
+            save=i;
+            break;
+        }
+    }
+    if(save==-1){
+        printf("The position not found!\n");
+        return -1;
+    }
+
+    for(int i=0;i<SPOS[1];i++){
+        if(in_file[i+save+1]=='\n'){
+            printf("The position not found!!\n");
+            return -1;
+        }
+    }
+    return SPOS[1]+save;
+}
+
+void save_edited(){
+    FILE* nfile=fopen(SFILE,"w");
+    fprintf(nfile,"%s",edited);
+    fclose(nfile);
+
+return;
+}

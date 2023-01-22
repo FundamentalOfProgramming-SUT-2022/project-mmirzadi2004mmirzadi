@@ -16,7 +16,7 @@ int file_exists(){
     FILE *nfile;
     char root[15];
     strcpy(root,  "root/");
-    if (nfile = fopen(strcat(root,SFILE), "r"))
+    if (nfile = fopen(SFILE, "r"))
     {
 
         fclose(nfile);
@@ -31,7 +31,7 @@ int file_not_exists(){
     FILE *nfile;
     char root[15];
     strcpy(root,  "root/");
-    if (!(nfile = fopen(strcat(root,SFILE), "r")))
+    if (!(nfile = fopen(SFILE, "r")))
     {
         fclose(nfile);
         printf("File does not exists!\n");
