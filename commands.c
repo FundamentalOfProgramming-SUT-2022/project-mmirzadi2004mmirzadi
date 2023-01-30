@@ -1,5 +1,5 @@
 #include "additional.c"
-
+;
 void createfile(){
     get_switch();
 
@@ -15,14 +15,19 @@ void createfile(){
         printf("Worng directory!\n");
         return;
     }
+    SFILE[3]='h';
+    make_dirs();
+    SFILE[3]='t';
     FILE* nfile;
 
     if(nfile=fopen(SFILE,"w"))
     {
     fclose(nfile);
     printf("File successfully created!\n");
+    get_file_str();
     return;
     }
+
     printf("Something went wrong!\n");
 }
 
@@ -47,6 +52,7 @@ void insert(int c){
     for(int i=0;i<(strlen(in_file)-pos);i++){
         edited[strlen(SSTR)+pos+i]=in_file[i+pos];
     }
+    edited[strlen(SSTR)+strlen(in_file)]='\0';
     save_edited();
     if(c)
     printf("Added successfully!\n");
@@ -113,7 +119,7 @@ void pastestr(){
         return;
     }
     strcpy(SSTR,copied);
-    printf("__%s__",copied);
+
     insert(0);
     printf("Have pasted successfully!\n");
 return;
@@ -125,9 +131,9 @@ void find(){
     get_file_str();
     long finds[1000];
     if(!BYWORD){
-    find_all(finds);
+    int counter=find_all(finds);
         if(COUNT){
-            printf("COUNT -->> I found %d statements.\n",sizeof(finds)/4);
+            printf("COUNT -->> I found %d statements.\n",counter);
 
         }
         if(AT==0){
@@ -151,25 +157,93 @@ void find(){
 
 
 void replace(){
-    AT
+    AT=-1;ALL=0;
     get_switch();
     get_file_str();
     long finds[1000];
     strcpy(SSTR,SSTR1);
-    find_all(finds);
+    int counter=find_all(finds);
+
     if(AT==0){
         printf("Wrong at input!\n");
         return;
-    }else if(AT>sizeof(finds)/4){
+    }else if(AT>(counter)){
         printf("I could not find that much!\n");
         return;
     }
-    if(AT&&ALL){
+    if(AT!=-1&&ALL){
         printf("You can't use both AT and ALL!\n");
         return;
     }
-    if(AT){
+    if(AT!=-1){
+        replace_str(finds,AT-1,counter);
+        printf("The phrase replaced successfuly!\n");
+        return;
 
     }
+    if(ALL){
+        int countersave=counter;
+
+        for(int i=0;i<countersave;i++){
+            get_file_str();
+            counter=find_all(finds);
+
+            replace_str(finds,0,counter);
+        }
+        printf("Replaced all phrases!\n");
+    }
+
+return;
+}
+
+void grep(){
+    get_switch();
+
+    long shomare_line=1;
+    int check,linecount;
+    for(int i=0;i<filenums;i++){
+        char line[200];
+        while(linecount=get_file_line(line,SFILES[i],shomare_line)){
+            if(exists_in_str(line,SSTR,linecount)){
+                printf("_%d[[[[[[__%s_]]]]]]]]__\n",strlen(SSTR),line);
+            }
+            shomare_line++;
+        }
+    }
+
+return;
+}
+
+void undo(){
+    get_switch();
+    if(file_not_exists()){
+        return;
+    }
+    long length=get_undo_file_str();
+    edited=malloc(length);
+    strcpy(edited,in_undo_file);
+
+    get_file_str();
+
+
+    if((in_file=="")&&(in_undo_file=="")){
+        printf("There is no undo state.\n");
+        return;
+    }
+
+
+
+    save_edited();
+    printf("The file returned to previous state.\n");
+return;
+}
+
+void tree(){
+
+    int depth,mini=0;
+    scanf("%d",&depth);
+
+    show_list(depth-1,"root/",1);
+    printf("\n");
 return;
 }

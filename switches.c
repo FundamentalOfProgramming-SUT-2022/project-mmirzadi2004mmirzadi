@@ -6,7 +6,9 @@ char SSTR[1000];
 char SSTR1[1000];
 char SSTR2[1000];
 
-
+char *SFILES[50];
+int filenums;
+int first_in_file;
 int SPOS[2];
 
 int COUNT=0,AT=-1,BYWORD=0,ALL=0;
@@ -19,6 +21,7 @@ int DIRECTION=1;
 char * copied=NULL;
 
 char * in_file;
+char * in_undo_file;
 
 
 

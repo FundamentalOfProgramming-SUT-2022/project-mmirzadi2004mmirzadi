@@ -1,6 +1,11 @@
 #include "validation.c"
 
-
+void set_space(int n){
+    for(int i=0;i<n;i++){
+        printf(" ");
+    }
+return;
+}
 
 char get_input(char a[]){
     a[0]='\0';
@@ -71,7 +76,7 @@ void get_switch(){
     g=getchar();
     if(g=='\n'){
         have_got_switch=1;
-        return;
+        return g;
     }
     }while(g==' ');
     char type[15];
@@ -88,6 +93,18 @@ void get_switch(){
         char root[15];
         strcpy(root,  "root/");
         strcpy(SFILE,strcat(root,SFILE));
+    }else if(!strcmp(type,"--files")){
+        filenums=0;
+        do{
+        check=get_input(SFILE);
+
+        SFILES[filenums]=(char*)malloc(100);
+        char root[100];
+        strcpy(root,"root/");
+        strcat(root,SFILE);
+        strcpy(SFILES[filenums],root);
+        filenums++;
+        }while(check!='\n');
     }else if(!strcmp(type,"--str")){
         check=get_input(SSTR);
     }else if(!strcmp(type,"--str1")){
@@ -161,6 +178,23 @@ int make_dirs(){
     return 1;
 }
 
+void save_edited(){
+    if(first_in_file){
+        SFILE[3]='h';
+        FILE* nfile=fopen(SFILE,"w");
+        fprintf(nfile,"%s",in_file);
+        fclose(nfile);
+        first_in_file=0;
+        SFILE[3]='t';
+    }
+    FILE* nfile=fopen(SFILE,"w");
+
+    fprintf(nfile,"%s",edited);
+    fclose(nfile);
+
+return;
+}
+
 long get_file_str(){
 
 
@@ -180,6 +214,32 @@ long get_file_str(){
       fclose (nfile);
     }
     in_file[length]='\0';
+
+
+return length;
+}
+
+long get_undo_file_str(){
+
+
+    long length;
+    SFILE[3]='h';
+    FILE * nfile = fopen (SFILE, "rb");
+    SFILE[3]='t';
+    if (nfile)
+    {
+      fseek (nfile, 0, SEEK_END);
+      length = ftell (nfile);
+      fseek (nfile, 0, SEEK_SET);
+      in_undo_file = (char*)malloc (length);
+      if (in_undo_file)
+      {
+        fread (in_undo_file, length,1, nfile);
+      }
+      fclose (nfile);
+    }
+    in_undo_file[length]='\0';
+
 return length;
 }
 
@@ -232,15 +292,9 @@ void copy_str(){
 return;
 }
 
-void save_edited(){
-    FILE* nfile=fopen(SFILE,"w");
-    fprintf(nfile,"%s",edited);
-    fclose(nfile);
 
-return;
-}
 
-void find_all(long finds[]){
+int find_all(long finds[]){
     int check=1,counter=0;
 
        for(long i=0;i<strlen(in_file);i++){
@@ -259,11 +313,126 @@ void find_all(long finds[]){
        }
 
 
+return counter;
+}
+
+void replace_str(long finds[],long shomare,int length){
+    long pos=finds[shomare];
+    edited=malloc(strlen(in_file)+strlen(SSTR2)-strlen(SSTR1)+1);
+    for(int i=0;i<pos;i++){
+        edited[i]=in_file[i];
+    }
+    for(int i=pos;i<(strlen(SSTR2)+pos);i++){
+        edited[i]=SSTR2[i-pos];
+    }
+    for(int i=pos+strlen(SSTR2);i<strlen(in_file)+strlen(SSTR2)-strlen(SSTR1);i++){
+        edited[i]=in_file[i+strlen(SSTR1)-strlen(SSTR2)];
+    }
+    edited[strlen(in_file)+strlen(SSTR2)-strlen(SSTR1)]='\0';
+
+    save_edited();
 return;
 }
 
-void replace_str(){
+void show_list(int depth,char path[],int numspace) {
+
+  DIR *d;
+  struct dirent *dir;
+  char npath[100];
+  int mini,numspace1;
+  numspace1=numspace;
+  d = opendir(path);
+ // printf("   ");
+  if (d) {
+        mini=0;
+    while ((dir = readdir(d)) != NULL) {
+        if(mini<2){
+            mini++;
+            continue;
+        }else
+        if(mini==2){
+
+      printf(".----%s", dir->d_name);
+        numspace+=(5+strlen(dir->d_name));
+        }else{
+        printf("\n");
+        set_space(numspace1);
+        printf("|\n");
+        set_space(numspace1);
+        printf("|\n");
+        set_space(numspace1);
+        printf( ".----%s", dir->d_name);
+
+        }
+                if(depth>1){
+
+            strcpy(npath,path);
+            strcat(npath,dir->d_name);
+            strcat(npath,"/");
+
+            show_list(depth-1,npath,numspace);
+        }
+        mini++;
+    }
+    closedir(d);
+  }
+  return(0);
+}
+wfrew
+;
+int get_file_line(char line[],char file_name[],long line_number){
+    long line_num=1;
+    int k=0;
 
 
-return;
+
+        strcpy(SFILE,file_name);
+        long length=get_file_str();
+        k=0;
+        for(int j=0;j<length;j++){
+            line[k]=in_file[j];
+            k++;
+            if(in_file[j]=='\n'){
+                line[k]='\0';
+                if(line_number==line_num){
+                   // printf("%s",line);
+                    return k;
+                }
+
+                line_num++;
+                k=0;
+            }
+        }
+        if(in_file[length-1]!='\n'){
+            line[k+1]='\0';
+
+                if(line_number==line_num){
+                   // printf("%s",line);
+                }else{
+                return 0;
+                }
+                line_num++;
+                k=0;
+
+        }
+
+
+return 0;
+}
+
+int exists_in_str(char bigger[],char smaller[],int linecount){
+    int check=1;
+            for(int j=0;j<linecount;j++){
+                check=1;
+                for(int s=0;s<strlen(smaller);s++){
+
+                    if(smaller[s]!=bigger[j]){
+                        check=0;
+                    }
+                }
+                if(check){
+                    return 1;
+                }
+            }
+return 0;
 }

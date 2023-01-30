@@ -5,6 +5,7 @@
 #include "switches.c"
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <dirent.h>
 #include "commands.c"
 // insertstr --file test.txt --str ggggg --pos 1:1
 // removestr --file test.txt --pos 2:4 -size 2 -f
@@ -17,6 +18,7 @@ char c;
 
 while(1){
     have_got_switch=0;
+    first_in_file=1;
     scanf("%s",command);
     if(!strcmp(command,"createfile")){
         createfile();
@@ -37,6 +39,12 @@ while(1){
         find();
     }else if(!strcmp(command,"replace")){
         replace();
+    }else if(!strcmp(command,"grep")){
+        grep();
+    }else if(!strcmp(command,"undo")){
+        undo();
+    }else if(!strcmp(command,"tree")){
+        tree();
     }
     else{
     do{
