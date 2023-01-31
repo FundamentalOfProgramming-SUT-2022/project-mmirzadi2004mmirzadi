@@ -41,6 +41,10 @@ while(1){
         replace();
     }else if(!strcmp(command,"grep")){
         grep();
+    }else if(!strcmp(command,"compare")){
+        compare();
+    }else if(!strcmp(command,"auto-indent")){
+        indent();
     }else if(!strcmp(command,"undo")){
         undo();
     }else if(!strcmp(command,"tree")){

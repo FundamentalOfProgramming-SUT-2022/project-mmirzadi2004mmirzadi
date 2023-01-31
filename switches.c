@@ -12,7 +12,7 @@ int first_in_file;
 int SPOS[2];
 
 int COUNT=0,AT=-1,BYWORD=0,ALL=0;
-
+int C=0,L=0;
 
 int SIZE;
 

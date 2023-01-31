@@ -129,6 +129,10 @@ void get_switch(){
         scanf("%d",&AT);
     }else if(!strcmp(type,"-count")){
         COUNT=1;
+    }else if(!strcmp(type,"-c")){
+        C=1;
+    }else if(!strcmp(type,"-l")){
+        L=1;
     }
 
     if(check=='\n'){
@@ -188,8 +192,13 @@ void save_edited(){
         SFILE[3]='t';
     }
     FILE* nfile=fopen(SFILE,"w");
+    for(int i=0;i<strlen(edited);i++){
+        if(edited[i]=='\n'&&edited[i+1]=='\n'){
+            i++;
+        }
+        fprintf(nfile,"%c",edited[i]);
+    }
 
-    fprintf(nfile,"%s",edited);
     fclose(nfile);
 
 return;
@@ -305,7 +314,7 @@ int find_all(long finds[]){
                 }
             }
             if(check){
-                printf("%ld\n",i);
+
                 finds[counter]=i;
                 counter++;
                 i+=(strlen(SSTR)-1);
@@ -393,7 +402,7 @@ int get_file_line(char line[],char file_name[],long line_number){
             line[k]=in_file[j];
             k++;
             if(in_file[j]=='\n'){
-                line[k]='\0';
+                line[k-1]='\0';
                 if(line_number==line_num){
                    // printf("%s",line);
                     return k;
@@ -404,9 +413,10 @@ int get_file_line(char line[],char file_name[],long line_number){
             }
         }
         if(in_file[length-1]!='\n'){
-            line[k+1]='\0';
+            line[k]='\0';
 
                 if(line_number==line_num){
+                        return 1;
                    // printf("%s",line);
                 }else{
                 return 0;
@@ -420,13 +430,14 @@ int get_file_line(char line[],char file_name[],long line_number){
 return 0;
 }
 
-int exists_in_str(char bigger[],char smaller[],int linecount){
+int exists_in_str(char bigger[],char smaller[]){
     int check=1;
-            for(int j=0;j<linecount;j++){
+
+            for(int j=0;j<strlen(bigger);j++){
                 check=1;
                 for(int s=0;s<strlen(smaller);s++){
 
-                    if(smaller[s]!=bigger[j]){
+                    if(smaller[s]!=bigger[j+s]){
                         check=0;
                     }
                 }
@@ -435,4 +446,16 @@ int exists_in_str(char bigger[],char smaller[],int linecount){
                 }
             }
 return 0;
+}
+
+long which_word(long pos){
+    char last;
+    long word_pos=0;
+        for(int i=0;i<pos;i++){
+            if((in_file[i]==' '||in_file[i]=='\n')&&!(last==' '||last=='\n')){
+                word_pos++;
+            }
+            last=in_file[i];
+        }
+        return word_pos+1;
 }
