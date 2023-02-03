@@ -16,6 +16,9 @@ char get_input(char a[]){
     scanf("%c",&g);
 
     }while(g==' ');
+    if(g=='\n'){
+        return '\n';
+    }
     if(g=='"'){
         while(1){
             g=getchar();
@@ -28,6 +31,18 @@ char get_input(char a[]){
                     a[len]=g;
                     len++;
                     g=k;
+                }
+            }
+            if(g=='\\'){
+                g=getchar();
+                if(g=='n'){
+                    a[len]='\n';
+                    len++;
+                    g=getchar();
+                }else if(g=='"'){
+                    a[len]='"';
+                    len++;
+                    g=getchar();
                 }
             }
             if(g=='\n'){
@@ -76,7 +91,7 @@ void get_switch(){
     g=getchar();
     if(g=='\n'){
         have_got_switch=1;
-        return g;
+        return;
     }
     }while(g==' ');
     char type[15];
@@ -114,7 +129,7 @@ void get_switch(){
     }else if(!strcmp(type,"--pos")){
         scanf("%d:%d",&SPOS[0],&SPOS[1]);
     }else if(!strcmp(type,"--size")){
-        scanf("%d",&SIZE);
+        scanf("%d",&SSIZE);
         //begin keys
     }else if(!strcmp(type,"-f")){
         DIRECTION=1;
@@ -192,10 +207,8 @@ void save_edited(){
         SFILE[3]='t';
     }
     FILE* nfile=fopen(SFILE,"w");
+
     for(int i=0;i<strlen(edited);i++){
-        if(edited[i]=='\n'&&edited[i+1]=='\n'){
-            i++;
-        }
         fprintf(nfile,"%c",edited[i]);
     }
 
@@ -207,20 +220,25 @@ return;
 long get_file_str(){
 
 
-    long length;
-    FILE * nfile = fopen (SFILE, "rb");
-
+    long length=0;
+    FILE * nfile = fopen (SFILE, "r");
+    in_file=malloc(1000);
+    char str[200];
     if (nfile)
     {
-      fseek (nfile, 0, SEEK_END);
-      length = ftell (nfile);
-      fseek (nfile, 0, SEEK_SET);
-      in_file = (char*)malloc (length);
-      if (in_file)
-      {
-        fread (in_file, length,1, nfile);
-      }
-      fclose (nfile);
+     // fseek (nfile, 0, SEEK_END);
+    //  length = ftell (nfile);
+    //  fseek (nfile, 0, SEEK_SET);
+char ch;
+    while (fscanf(nfile, "%c",
+                  &in_file[length])
+           == 1){
+
+        length++;
+           }
+   fclose(nfile);
+
+     // fclose (nfile);
     }
     in_file[length]='\0';
 
@@ -257,28 +275,30 @@ long find_pos(){
     long length=get_file_str();
 
     long counter=1,save=-1;
-
+    if(SPOS[0]==1&&SPOS[1]==0){
+        return 0;
+    }
     for(int i=0;i<length;i++){
         if(in_file[i]=='\n'){
             counter++;
         }
-        if(counter>=SPOS[0]){
+        if(counter>=(SPOS[0])){
             save=i;
             break;
         }
     }
     if(save==-1){
-        printf("The position not found!\n");
+
         return -1;
     }
-
+  //  printf("__%d__",save);
     for(int i=0;i<SPOS[1];i++){
-        if(in_file[i+save+1]=='\n'){
-            printf("The position not found!!\n");
+        if(in_file[i+save+1]=='\n'||i+save+1>=length){
+
             return -1;
         }
     }
-    if(SPOS==0)
+    if(SPOS[0]==1)
     return SPOS[1]+save;
     else{
     return SPOS[1]+save+1;
@@ -286,15 +306,15 @@ long find_pos(){
 }
 
 void copy_str(){
-    copied=(char*)malloc(SIZE*sizeof(char));
+    copied=(char*)malloc(SSIZE*sizeof(char));
     int pos=find_pos();
     if(DIRECTION){
-            for(int i=0;i<SIZE;i++){
+            for(int i=0;i<SSIZE;i++){
                 copied[i]=in_file[i+pos];
             }
     }else{
-            for(int i=0;i<SIZE;i++){
-                copied[i]=in_file[pos-SIZE+i];
+            for(int i=0;i<SSIZE;i++){
+                copied[i]=in_file[pos-SSIZE+i];
             }
         }
 
@@ -304,18 +324,50 @@ return;
 
 
 int find_all(long finds[]){
-    int check=1,counter=0;
-
-       for(long i=0;i<strlen(in_file);i++){
+    int check=1,counter=0,firststar=0,laststar=0,checknospace=1,bet;
+    long i,m=0;
+        if(SSTR[0]=='*'){
+            m=1;
+            firststar=1;
+        }
+        if(SSTR[strlen(SSTR)-1]=='*'){
+            SSTR[strlen(SSTR)-1]='\0';
+            laststar=1;
+        }
+       for(i=0;i<strlen(in_file);i++){
             check=1;
-            for(long j=0;j<strlen(SSTR);j++){
+            for(long j=m;j<strlen(SSTR);j++){
                 if(SSTR[j]!=in_file[i+j]){
                     check=0;
                 }
             }
             if(check){
 
+                bet=0;
+                if(firststar){
+
+                    while(i>0&&(in_file[i-1]!=' '&&in_file[i-1]!='\n')){
+                        i--;
+                        bet++;
+                    }
+                }
+
                 finds[counter]=i;
+                i+=bet;
+                if(counter>0&&laststar){
+                    bet=finds[counter-1];
+                    checknospace=1;
+                    while(bet<=i){
+                        if(in_file[bet]==' '&&in_file[bet]=='\n'){
+                            checknospace=0;
+                        }
+                        bet++;
+                    }
+                    if(!checknospace){
+
+                        counter++;
+                    }
+                }
                 counter++;
                 i+=(strlen(SSTR)-1);
             }
@@ -385,9 +437,9 @@ void show_list(int depth,char path[],int numspace) {
     }
     closedir(d);
   }
-  return(0);
+  return;
 }
-wfrew
+
 ;
 int get_file_line(char line[],char file_name[],long line_number){
     long line_num=1;
@@ -431,20 +483,29 @@ return 0;
 }
 
 int exists_in_str(char bigger[],char smaller[]){
-    int check=1;
+    int check=1,counter=0,checknospace=1,bet;
+    long i,m=0;
+        if(smaller[0]=='*'){
+            m=1;
 
-            for(int j=0;j<strlen(bigger);j++){
-                check=1;
-                for(int s=0;s<strlen(smaller);s++){
+        }
+        if(smaller[strlen(smaller)-1]=='*'){
+            smaller[strlen(smaller)-1]='\0';
 
-                    if(smaller[s]!=bigger[j+s]){
-                        check=0;
-                    }
-                }
-                if(check){
-                    return 1;
+        }
+       for(i=0;i<strlen(bigger);i++){
+            check=1;
+            for(long j=m;j<strlen(smaller);j++){
+                if(smaller[j]!=bigger[i+j]){
+                    check=0;
                 }
             }
+            if(check){
+                return 1;
+            }
+       }
+
+
 return 0;
 }
 
@@ -458,4 +519,183 @@ long which_word(long pos){
             last=in_file[i];
         }
         return word_pos+1;
+}
+
+
+
+
+
+//-----------------------------------
+void print_line_to_line(char str[],int a,int b);
+
+void print_in_color(char text[],int color,int bgcolor,int x2,int y2){
+     int y1=wherey();
+     int x1=wherex();
+    textcolor(1);
+    textbackground(1);
+    gotoxy(x2,y2);
+    cprintf("%s",text);
+    textbackground(BLACK);
+    textcolor(WHITE);
+    gotoxy(x1,y1);
+return;
+}
+
+int move_on_screen(char a,int y){
+
+    SPOS[0]=wherey()-1;
+    SPOS[1]=wherex()-1;
+    long pos=find_pos();
+    int y1,x1;
+    if(a=='i'){
+        if(wherey()>1){
+            y1=wherey();
+            x1=wherex();
+         //   printf("__%d__",Y);
+            if(wherey()<5&&Y>0){
+
+            Y--;
+            print_line_to_line(in_file,1+Y,27+Y);
+            gotoxy(1,y1);
+           // printf("->\n");
+
+            }else{
+            while(pos<0&&SPOS[1]>0){
+                    SPOS[1]--;
+                    gotoxy(wherex()-1,wherey());
+                    pos=find_pos();
+            }
+            gotoxy(wherex(),wherey()-1);
+            }
+            return 1; }}
+    if(a=='j'){if(wherex()>1){
+            gotoxy(wherex()-1,wherey());
+            return 1; }
+    }
+    SPOS[0]=wherey()+1;
+    SPOS[1]=wherex()-1;
+    pos=find_pos();
+//    int y1,x1;
+    if(a=='k'){
+            y1=wherey();
+            x1=wherex();
+         //   printf("__%d__",Y);
+            if(wherey()>=24){
+
+            Y++;
+            print_line_to_line(in_file,1+Y,27+Y);
+            gotoxy(1,28);
+           // printf("->\n");
+
+            }else if(Y==0&&y-wherey()<5){
+            gotoxy(1,y-1);
+             //   printf("_______%d______",y);
+            printf("\n->");
+
+            }
+            gotoxy(x1,y1);
+        if(wherey()<24){
+            while(pos<0&&SPOS[1]>0){
+                    SPOS[1]--;
+                    gotoxy(wherex()-1,wherey());
+                    pos=find_pos();
+            }
+
+            gotoxy(wherex(),wherey()+1);
+        }
+
+
+        return 1;
+    }
+    SPOS[0]=wherey();
+    SPOS[1]=wherex();
+    if(SPOS[0]==1){
+        SPOS[1]--;
+    }
+    pos=find_pos();
+
+    if(a=='l'&&pos>=0){
+        gotoxy(wherex()+1,wherey());
+        return 1;
+    }
+
+}
+
+void print_line_to_line(char str[],int a,int b){
+    int y1,x1,check;
+    y1=wherey();
+    x1=wherex(),check=0;
+    gotoxy(1,1);
+    clrscr();
+    textcolor(WHITE);
+    long length=strlen(str);
+    long count=1,i=0,lim=0;
+
+    while(count<=b){
+        if(i>=length){
+            textcolor(BLUE);
+                if(check){
+                    printf("\n");
+                    check=0;
+                    b++;
+                }
+            while((lim<4||y>=24)){
+
+                if(count>=a&&count<=b){
+                        cprintf("->\n");
+
+                        lim++;
+                }
+                count++;
+                if(count>b){
+                    break;
+                }
+            }
+
+            textcolor(WHITE);
+            break;
+        }
+
+        if(count>=a){
+                check=1;
+            printf("%c",str[i]);
+        }
+        if(str[i]=='\n'){
+            count++;
+        }
+            i++;
+
+    }
+  //  printf("__%d__",wherey());
+     y1=wherey();
+     x1=wherex();
+    textcolor(WHITE);
+    textbackground(BLUE);
+    gotoxy(1,29);
+    cprintf("NORMAL");
+    textbackground(BLACK);
+    printf("  %s",SFILE+5);
+    gotoxy(x1,y1);
+return;
+}
+
+int insert_char(char a){
+    int pos=find_pos();
+
+    if(pos<0){
+
+        return 0;
+    }
+    char* edited2;
+    edited2=malloc(strlen(edited)+2);
+    for(int i=0;i<pos;i++){
+        edited2[i]=edited[i];
+    }
+    edited2[pos]=a;
+    for(int i=0;i<(strlen(edited)-pos+1);i++){
+        edited2[1+pos+i]=edited[i+pos];
+    }
+    edited2[strlen(edited)+1]='\0';
+
+    strcpy(edited,edited2);
 }

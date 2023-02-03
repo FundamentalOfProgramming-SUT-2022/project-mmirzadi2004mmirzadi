@@ -1,6 +1,8 @@
-#include "additional.c"
+#include "basecommands.c"
+
 ;
 void createfile(){
+    SFILE[0]='\0';
     get_switch();
 
     if(is_empty(SFILE,"file address")){
@@ -15,16 +17,8 @@ void createfile(){
         printf("Worng directory!\n");
         return;
     }
-    SFILE[3]='h';
-    make_dirs();
-    SFILE[3]='t';
-    FILE* nfile;
-
-    if(nfile=fopen(SFILE,"w"))
-    {
-    fclose(nfile);
+    if(Bcreatefile()){
     printf("File successfully created!\n");
-    get_file_str();
     return;
     }
 
@@ -36,24 +30,10 @@ void insert(int c){
     if(file_not_exists()){
         return;
     }
-    int pos=find_pos();
-
-    if(pos<0){
+    if(!Binsert()){
+        printf("The position not found!\n");
         return;
     }
-
-    edited=malloc((strlen(SSTR)+strlen(in_file))*sizeof(char));
-    for(int i=0;i<pos;i++){
-        edited[i]=in_file[i];
-    }
-    for(int i=0;i<(strlen(SSTR));i++){
-        edited[pos+i]=SSTR[i];
-    }
-    for(int i=0;i<(strlen(in_file)-pos);i++){
-        edited[strlen(SSTR)+pos+i]=in_file[i+pos];
-    }
-    edited[strlen(SSTR)+strlen(in_file)]='\0';
-    save_edited();
     if(c)
     printf("Added successfully!\n");
 return;
@@ -61,33 +41,50 @@ return;
 
 void cat(){
     get_switch();
-    long length=get_file_str();
-    printf("%s\n",in_file);
-
+    if(file_not_exists()){
+        return;
+    }
+    if(!Bcat()){
+        printf("Something went wrong.");
+    }
+    printf("\n");
 return;
 }
 
 void removestr(int c){
     get_switch();
-    int length=get_file_str();
+
+    if(file_not_exists()){
+        return;
+    }
     long pos=find_pos();
-    edited=malloc(length-SIZE);
+    if(pos<0){
+    printf("The position not found!\n");
+    return;
+    }
+    int length=get_file_str();
+    if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
+            printf("Not valid size!\n");
+        return;
+    }
+
+    edited=malloc(length-SSIZE);
     if(DIRECTION){
         for(int i=0;i<pos;i++){
             edited[i]=in_file[i];
         }
-        for(int i=0;i<(length-pos-SIZE);i++){
-            edited[i+pos]=in_file[pos+SIZE+i];
+        for(int i=0;i<(length-pos-SSIZE);i++){
+            edited[i+pos]=in_file[pos+SSIZE+i];
         }
     }else{
-        for(int i=0;i<pos-SIZE;i++){
+        for(int i=0;i<pos-SSIZE;i++){
             edited[i]=in_file[i];
         }
         for(int i=0;i<(length-pos);i++){
-            edited[i+pos-SIZE]=in_file[pos+i];
+            edited[i+pos-SSIZE]=in_file[pos+i];
         }
     }
-    edited[length-SIZE]='\0';
+    edited[length-SSIZE]='\0';
     save_edited();
     if(c)
     printf("Removed successfully!\n");
@@ -96,7 +93,20 @@ return;
 
 void copystr(){
     get_switch();
-    get_file_str();
+    if(file_not_exists()){
+        return;
+    }
+    long length=get_file_str();
+    long pos=find_pos();
+    if(pos<0){
+    printf("The position not found!\n");
+    return;
+    }
+
+    if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
+            printf("Not valid size!\n");
+        return;
+    }
     copy_str();
     printf("String copied.\n");
 return;
@@ -104,6 +114,17 @@ return;
 
 void cutstr(){
     get_switch();
+    long length=get_file_str();
+    long pos=find_pos();
+    if(pos<0){
+    printf("The position not found!\n");
+    return;
+    }
+
+    if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
+            printf("Not valid size!\n");
+        return;
+    }
     copy_str();
     removestr(0);
 
@@ -115,6 +136,20 @@ return;
 
 void pastestr(){
     get_switch();
+    if(file_not_exists()){
+        return;
+    }
+    long length=get_file_str();
+    long pos=find_pos();
+    if(pos<0){
+    printf("The position not found!\n");
+    return;
+    }
+
+    if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
+            printf("Not valid size!\n");
+        return;
+    }
     if(copied==NULL){
         printf("Nothing have been copied!\n");
         return;
@@ -131,13 +166,15 @@ void find(){
     get_switch();
     get_file_str();
     long finds[1000];
-
+    if(file_not_exists()){
+        return;
+    }
     int counter;
 
     counter=find_all(finds);
 
         if(!counter){
-            printf("NOthing founded!\n");
+            printf("Nothing founded!\n");
             return;
         }
         if(COUNT){
@@ -150,7 +187,7 @@ void find(){
         }else if(AT>counter){
             printf("AT -->> I could not find that much!\n,%ld",counter);
         }else if(AT>0){
-            printf("AT -->> THE %d th statement is on the %d position.",AT,BYWORD?which_word(finds[AT-1]):finds[AT-1]);
+            printf("AT -->> THE %d th statement is on the %d position.\n",AT,BYWORD?which_word(finds[AT-1]):finds[AT-1]);
         }
         if(ALL){
             for(int i=0;i<counter;i++){
@@ -162,7 +199,7 @@ void find(){
 
         }
         if(!ALL&&AT==-1&&!COUNT){
-            printf("%ld",BYWORD?which_word(finds[0]):finds[0]);
+            printf("%ld\n",BYWORD?which_word(finds[0]):finds[0]);
         }
 
 
@@ -171,6 +208,9 @@ void find(){
 void replace(){
     AT=-1;ALL=0;
     get_switch();
+    if(file_not_exists()){
+        return;
+    }
     get_file_str();
     long finds[1000];
     strcpy(SSTR,SSTR1);
@@ -316,7 +356,7 @@ void indent(){
         printf("Wrong input!\n");
         return;
     }
-    char root[50];
+    char root[115];
     strcpy(root,"root/");
     long kroshnum=0;
     strcat(root,SFILE);
@@ -324,6 +364,7 @@ void indent(){
     long length=get_file_str();
     edited=malloc(length*2);
     long k=0;
+
     for(int i=0;i<length;i++){
         if(in_file[i]=='{'){
 
@@ -350,7 +391,7 @@ void indent(){
                     i++;
                 }
             }
-            if(in_file[i+1]!='\n'){
+            if(i<length-1&&in_file[i+1]!='\n'){
                 edited[k]=in_file[i];
                 k++;
                 i++;
@@ -390,29 +431,47 @@ void indent(){
         m++;
     }
     kroshnum=0;
+    int upordown=1;
+    int space[1000];
+
     for(int i=m;i<strlen(edited);i++){
         if(edited[i]=='{'){
-            kroshnum++;
+            kroshnum+=4;
+            upordown=1;
         }
         if(edited[i]=='}'){
-            kroshnum--;
+            kroshnum-=4;
+            upordown=-1;
         }
         edited2[k]=edited[i];
         k++;
+      //  kroshnum=kroshnum+(upordown);
         if(edited[i]=='\n'){
             while(i+1<strlen(edited)&&edited[i+1]==' '){
                 i++;
             }
-            for(int j=0;j<kroshnum*4;j++){
+            if(i+1<strlen(edited)&&edited[i+1]=='}'){
+                    for(int j=0;j<kroshnum-4;j++){
+                        edited2[k]=' ';
+                        k++;
+                    }
+                    edited2[k]=edited[i+1];
+                    k++; i++;
+                    kroshnum-=4;
+            }
+            else{
+            for(int j=0;j<kroshnum;j++){
                 edited2[k]=' ';
                 k++;
             }
 
+            }
         }
     }
     edited2[k]='\0';
     strcpy(edited,edited2);
     save_edited();
+    printf("Success!\n");
 return;
 }
 
@@ -491,5 +550,179 @@ void tree(){
 
     show_list(depth-1,"root/",1);
     printf("\n");
+return;
+}
+
+
+
+// faze 2
+
+
+void vim(){
+    int check;
+    while(1){
+    int check=get_input(SFILE);
+
+    if(check==' '){
+        printf("Wrong input!\n");
+        return;
+    }
+
+    if(strlen(SFILE)>0&&SFILE[0]!='\n'){
+
+    char root[115];
+    strcpy(root,"root/");
+    strcat(root,SFILE);
+    strcpy(SFILE,root);
+    break;
+    }else{
+    printf("Enter your file name.\n");
+
+    }
+    }
+    if(!file_exists1()){
+
+        Bcreatefile();
+    }
+    clrscr();
+    if(file_exists1()){
+        get_file_str();
+       // printf("%s\n",in_file);
+    }
+
+    if(file_exists1()){
+        print_line_to_line(in_file,1,27);
+    }
+    y=wherey();
+  //  printf("%d",y);
+    textcolor(1);
+  //  cprintf("\n->\n");cprintf("->\n");cprintf("->\n");cprintf("->\n");cprintf("->\n");
+    long tool=strlen(in_file);
+    for(int i=0;i<4;i++){
+  //  in_file[tool+3*i]='\n';in_file[tool+1+3*i]='-';in_file[tool+2+3*i]='>';
+    }
+    in_file[12+tool]='\0';
+
+    textcolor(WHITE);
+    textbackground(BLUE);
+    gotoxy(1,29);
+    cprintf("NORMAL");
+    textbackground(BLACK);
+    printf("  %s",SFILE);
+    gotoxy(1,1);
+    char c;
+    edited=malloc(strlen(in_file));
+    strcpy(edited,in_file);
+    label:
+    strcpy(in_file,edited);
+    while(1){
+            textcolor(BLUE);
+
+            c=getch();
+            if(c==13){
+                gotoxy(1,30);
+
+                break;
+            }
+            if(c=='e'){
+                break;
+            }
+
+        move_on_screen(c,y);
+            if(c=='k'&&y-wherey()<4){
+                y++;
+            }
+    }
+    int y1,x1;
+    //edit mode
+    if(c=='e'){
+            y1=wherey();
+            x1=wherex();
+            gotoxy(1,29);
+            textbackground(YELLOW);
+            textcolor(BLACK);
+            cprintf("EDITED MODE");
+            textbackground(BLACK);
+            textcolor(WHITE);
+            printf("   %s",SFILE+5);
+            gotoxy(x1,y1);
+            while(1){
+
+            c=getch();
+
+            if(c==':'||c=='/'){
+                break;
+            }
+            if(c=='\\'){
+               goto label;
+            }
+            SPOS[0]=wherey(); SPOS[1]=wherex()-1;
+            insert_char(c);
+            y1=wherey();
+            x1=wherex();
+            print_line_to_line(edited,1+Y,27+Y);
+            gotoxy(x1+1,y1);
+            }
+
+    }
+
+
+    textcolor(WHITE);
+    gotoxy(1,30);
+    printf(":command :");
+    char command[15];
+    int commanda=0;
+    while(1){
+            check=0;
+            commanda=0;
+        while(1){
+            c=getchar();
+            if(c=='p'){
+                gotoxy(1,30);
+                printf("                  ");
+                textcolor(1);
+                gotoxy(1,1);
+                goto label;
+            }
+            if(c=='\n'||c==':'){
+
+                break;
+            }
+            command[commanda]=c;
+
+            commanda++;
+
+        }
+            if(!strcmp(command,"save")){
+                save_edited();
+                check=1;
+            }
+            if(check){
+                textcolor(GREEN);
+                cprintf("SUCCESS!");
+
+                textcolor(WHITE);
+                if(getch()){
+                    gotoxy(1,31);
+                    cprintf("                                       ");
+                  gotoxy(11,30);
+                    cprintf("                                       ");
+                    gotoxy(11,30);
+                }
+            }
+
+    }
+
+return;
+}
+
+void uuu(){
+    get_switch();
+    long length=get_file_str();
+    edited=malloc(length);
+
+    strcpy(edited,in_file);
+    printf("%s\n",edited);
+    save_edited();
 return;
 }

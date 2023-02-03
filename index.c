@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "commands.c"
+
 // insertstr --file test.txt --str ggggg --pos 1:1
 // removestr --file test.txt --pos 2:4 -size 2 -f
 
@@ -15,7 +16,7 @@ int main(){
 
 char command[15];
 char c;
-
+// insertstr --file g.txt --str abcdef --pos 1:1
 while(1){
     have_got_switch=0;
     first_in_file=1;
@@ -49,8 +50,11 @@ while(1){
         undo();
     }else if(!strcmp(command,"tree")){
         tree();
-    }
-    else{
+    }else if(!strcmp(command,"vim")){
+        vim();
+    }else if(!strcmp(command,"uuu")){
+        uuu();
+    }else{
     do{
         c=getchar();
     }while(c!='\n');

@@ -1,4 +1,4 @@
-
+#include "phase2commands.c"
 
 int is_empty(char a[],char warning[]){
         if(strlen(a)==0){
@@ -21,6 +21,21 @@ int file_exists(){
 
         fclose(nfile);
         printf("File have already exists!\n");
+        return 1;
+    }
+
+    return 0;
+
+}
+int file_exists1(){
+    FILE *nfile;
+    char root[15];
+    strcpy(root,  "root/");
+    if (nfile = fopen(SFILE, "r"))
+    {
+
+        fclose(nfile);
+
         return 1;
     }
 
