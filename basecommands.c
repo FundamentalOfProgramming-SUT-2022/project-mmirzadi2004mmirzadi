@@ -104,7 +104,7 @@ int replace_vim(){
                         return 0;
                     }else if(AT>(counter)){
                      //   printf("I could not find that much!\n");
-                        return;
+                        return 0;
                     }
                     if(AT!=-1&&ALL){
                      //   printf("You can't use both AT and ALL!\n");

@@ -14,7 +14,7 @@
 
 int main(){
 
-char command[15];
+char command[50];
 char c;
 // insertstr --file g.txt --str abcdef --pos 1:1
 while(1){

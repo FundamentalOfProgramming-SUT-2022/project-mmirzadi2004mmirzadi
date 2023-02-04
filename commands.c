@@ -546,7 +546,7 @@ void visualmode();
 void insertmode();
 void normalmode();
 void choose();
-
+void vim();
 void choose(char command[]){
     //char command[50];
     //scanf("%s",command);
@@ -585,8 +585,6 @@ void choose(char command[]){
         tree();
     }else if(!strcmp(command,"vim")){
         vim();
-    }else if(!strcmp(command,"uuu")){
-        uuu();
     }else{
     do{
         c=getchar();
@@ -614,23 +612,27 @@ void vim(){
     strcpy(root,"root/");
     strcat(root,SFILE);
     strcpy(SFILE,root);
-    have_file_neme=1;
+    have_file_name=1;
     }else{
         strcpy(SFILE,"new.txt");
-        have_file_neme=0;
+        have_file_name=0;
     }
-    if(!file_exists1()){
-        Bcreatefile();
+    if(have_file_name){
+        if(!file_exists1()){
+            Bcreatefile();
+        }
+
+        if(file_exists1()){
+            get_file_str();
+           // printf("%s\n",in_file);
+        }
+
+
     }
     clrscr();
-    if(file_exists1()){
-        get_file_str();
-       // printf("%s\n",in_file);
-    }
+    get_file_str();
+     print_line_to_line(in_file,1,26,"NORMAL",1); //0 normal 1 visual 2 insert
 
-    if(file_exists1()){
-        print_line_to_line(in_file,1,26,"NORMAL",1); //0 normal 1 visual 2 insert
-    }
     y=wherey();
   //  printf("%d",y);
     textcolor(1);
@@ -649,7 +651,7 @@ void vim(){
   //  print_in_pos(SFILE+5,20,28);
     gotoxy(1,1);
     char c;
-    edited=malloc(strlen(in_file));
+    edited=malloc(strlen(in_file)+2000);
     strcpy(edited,in_file);
         for(int i=0;i<4;i++){
 
@@ -657,8 +659,7 @@ void vim(){
 
             edited[tool]='\n';
             edited[tool+1]=' ';
-            edited[tool+2]=' ';
-            edited[tool+3]='\0';
+            edited[tool+2]='\0';
         }
     strcpy(in_file,edited);
     visualmode();
@@ -671,8 +672,11 @@ return;
 void visualmode(){
     char c;
     int x1,y1;
+        if(!have_saved){
+           print_in_pos("+",60,28);
+        }
     print_in_color("  VISUAL  ",WHITE,BLUE,1,28);
-  //  print_in_pos(SFILE+5,20,28);
+    print_in_pos(SFILE+5,20,28);
     int selected=0;
     long pos1,pos2;
     while(1){
@@ -735,7 +739,10 @@ void insertmode(){
     int y1,x1;
     char c;
     //edit mode
-
+        have_saved=0;
+        if(!have_saved){
+           print_in_pos("+",60,28);
+        }
             y1=wherey();
             x1=wherex();
             SPOS[0]=wherey(); SPOS[1]=wherex()-1;
@@ -840,7 +847,7 @@ void normalmode(){
 
 
             if(!strcmp(command,"save")){
-                if(have_file_neme){
+                if(have_file_name){
                     save_edited();
                 }else{
                     gotoxy(11,29);
@@ -855,6 +862,8 @@ void normalmode(){
                     if(Bcreatefile()){
                          //   printf("____%s__",edited);
                         save_edited();
+                        print_in_pos("       ",59,28);
+                        have_saved=1;
                     }else{
                         check=-1;
                     }
@@ -882,6 +891,8 @@ void normalmode(){
                     strcat(root,SFILE);
                     strcpy(SFILE,root);
                 save_edited();
+                print_in_pos(" ",60,28);
+                have_saved=1;
                 check=1;
             }else if(!strcmp(command,"open")){
                 save_edited();
@@ -893,6 +904,7 @@ void normalmode(){
                     x1=wherex(); y1=wherey();
                     get_file_str();
                     save_edited();
+
                     print_line_to_line(edited,1+Y,26+Y,"NORMAL",1);
                     gotoxy(x1,y1);
                     normalmode();

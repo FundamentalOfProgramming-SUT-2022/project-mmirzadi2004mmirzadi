@@ -27,4 +27,5 @@ long Y;
 int y;
 
 char *edited;
-int have_file_neme;
+int have_file_name;
+int have_saved=0;

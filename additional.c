@@ -618,7 +618,7 @@ int move_on_screen(char a,int y){
             while(pos<0&&SPOS[1]>0){
                     SPOS[1]--;
                     gotoxy(wherex()-1,wherey());
-                    pos=find_pos();
+                    pos=find_pos2(edited);
             }
             gotoxy(wherex(),wherey()-1);
             }
@@ -629,7 +629,7 @@ int move_on_screen(char a,int y){
     }
     SPOS[0]=wherey()+1;
     SPOS[1]=wherex()-1;
-    pos=find_pos();
+    pos=find_pos2(edited);
 //    int y1,x1;
     if(a=='k'){
             y1=wherey();
@@ -640,11 +640,16 @@ int move_on_screen(char a,int y){
             Y++;
             print_line_to_line(in_file,1+Y,26+Y,"visual",1);
             gotoxy(1,28);
+            long tool=strlen(edited);
+            edited[tool]='\n';
+            edited[tool+1]=' ';
+            edited[tool+2]=' ';
+            edited[tool+3]='\0';
            // printf("->\n");
 
             }else if(Y==0&&y-wherey()<5){
             gotoxy(1,y-1);
-            long tool=strlen(edited);
+             long tool=strlen(edited);
             edited[tool]='\n';
             edited[tool+1]=' ';
             edited[tool+2]=' ';
@@ -658,7 +663,7 @@ int move_on_screen(char a,int y){
             while(pos<0&&SPOS[1]>0){
                     SPOS[1]--;
                     gotoxy(wherex()-1,wherey());
-                    pos=find_pos();
+                    pos=find_pos2(edited);
             }
 
             gotoxy(wherex(),wherey()+1);
@@ -672,7 +677,7 @@ int move_on_screen(char a,int y){
     if(SPOS[0]==1){
         SPOS[1]--;
     }
-    pos=find_pos();
+    pos=find_pos2(edited);
 
     if(a=='l'&&pos>=0){
         gotoxy(wherex()+1,wherey());
@@ -736,7 +741,7 @@ void print_line_to_line(char str[],int a,int b,char mode[],int kol){
     gotoxy(1,28);
     cprintf("%s",mode);
     textbackground(BLACK);
-    printf("  %s",SFILE+5);
+    print_in_pos(SFILE+5,20,28);
     gotoxy(x1,y1);
 return;
 }
@@ -810,7 +815,7 @@ void select_line_to_line(char str[],int a,int b,char mode[],int kol,long c,long 
     gotoxy(1,28);
     cprintf("%s",mode);
     textbackground(BLACK);
-    printf("  %s",SFILE+5);
+    print_in_pos(SFILE+5,20,28);
     gotoxy(x1,y1);
 return;
 }
