@@ -380,7 +380,7 @@ int find_all(long finds[]){
        for(i=0;i<strlen(in_file);i++){
             check=1;
             for(long j=m;j<strlen(SSTR);j++){
-                if(SSTR[j]!=in_file[i+j]){
+                if(SSTR[j]!=in_file[i+j-m]){
                     check=0;
                 }
             }
@@ -388,27 +388,31 @@ int find_all(long finds[]){
 
                 bet=0;
                 if(firststar){
-
+                  //  printf("fja");
                     while(i>0&&(in_file[i-1]!=' '&&in_file[i-1]!='\n')){
                         i--;
                         bet++;
                     }
+                 //   printf("__%d__",i);
                 }
-
+                if(counter==0||finds[counter-1]!=i){
                 finds[counter]=i;
+                }else{
+                    counter--;
+                }
                 i+=bet;
                 if(counter>0&&laststar){
                     bet=finds[counter-1];
                     checknospace=1;
                     while(bet<=i){
-                        if(in_file[bet]==' '&&in_file[bet]=='\n'){
+                        if(in_file[bet]==' '||in_file[bet]=='\n'){
                             checknospace=0;
                         }
                         bet++;
                     }
-                    if(!checknospace){
+                    if(checknospace){
 
-                        counter++;
+                        counter--;
                     }
                 }
                 counter++;
@@ -875,3 +879,9 @@ return;
 }
 
 
+void saveo(char str[]){
+    output=malloc(strlen(str));
+    strcmp(output,str);
+
+return;
+}

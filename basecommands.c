@@ -192,7 +192,7 @@ int Bindent(char str[]){
                 }
 
                 if(i&&str[k-1]!='\n'){
-                        printf("_____%c_____",in_file[k-1]);
+                      //  printf("_____%c_____",in_file[k-1]);
                     edited[k]='\n';
                     k++;
                 }

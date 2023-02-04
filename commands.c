@@ -15,11 +15,14 @@ void createfile(){
     }
 
     if(Bcreatefile()){
-    printf("File successfully created!\n");
+    printf("File successfully created!");
+  //  saveo("File successfully created!\n");
+
     return;
     }
 
-    printf("Something went wrong!\n");
+    printf("Something went wrong!");
+  //  saveo("Something went wrong!\n");
 }
 
 void insert(int c){
@@ -28,11 +31,11 @@ void insert(int c){
         return;
     }
     if(!Binsert()){
-        printf("The position not found!\n");
+        printf("The position not found!");
         return;
     }
     if(c)
-    printf("Added successfully!\n");
+    printf("Added successfully!");
 return;
 }
 
@@ -59,7 +62,7 @@ void removestr(int c){
     }
     save_edited();
     if(c)
-    printf("Removed successfully!\n");
+    printf("Removed successfully!");
 return;
 }
 
@@ -71,16 +74,16 @@ void copystr(){
     long length=get_file_str();
     long pos=find_pos();
     if(pos<0){
-    printf("The position not found!\n");
+    printf("The position not found!");
     return;
     }
 
     if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
-            printf("Not valid size!\n");
+            printf("Not valid size!");
         return;
     }
     copy_str();
-    printf("String copied.\n");
+    printf("String copied.");
 return;
 }
 
@@ -89,18 +92,18 @@ void cutstr(){
     long length=get_file_str();
     long pos=find_pos();
     if(pos<0){
-    printf("The position not found!\n");
+    printf("The position not found!");
     return;
     }
 
     if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
-            printf("Not valid size!\n");
+            printf("Not valid size!");
         return;
     }
     copy_str();
     removestr(0);
 
-    printf("String cut.\n");
+    printf("String cut.");
 
 
 return;
@@ -114,22 +117,22 @@ void pastestr(){
     long length=get_file_str();
     long pos=find_pos();
     if(pos<0){
-    printf("The position not found!\n");
+    printf("The position not found!");
     return;
     }
 
     if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
-            printf("Not valid size!\n");
+            printf("Not valid size!");
         return;
     }
     if(copied==NULL){
-        printf("Nothing have been copied!\n");
+        printf("Nothing have been copied!");
         return;
     }
     strcpy(SSTR,copied);
 
     insert(0);
-    printf("Have pasted successfully!\n");
+    printf("Have pasted successfully!");
 return;
 }
 
@@ -146,20 +149,21 @@ void find(){
     counter=find_all(finds);
 
         if(!counter){
-            printf("Nothing founded!\n");
+            printf("Nothing founded!");
             return;
         }
         if(COUNT){
-            printf("COUNT -->> I found %d statements.\n",counter);
-
+            printf("COUNT -->> I found %d statements.",counter);
+            return;
         }
 
         if(AT==0){
-            printf("AT -->> Incurrect input!\n");
+            printf("AT -->> Incurrect input!");
+
         }else if(AT>counter){
-            printf("AT -->> I could not find that much!\n,%ld",counter);
+            printf("AT -->> I could not find that much!");
         }else if(AT>0){
-            printf("AT -->> THE %d th statement is on the %d position.\n",AT,BYWORD?which_word(finds[AT-1]):finds[AT-1]);
+            printf("AT -->> THE %d th statement is on the %d position.",AT,BYWORD?which_word(finds[AT-1]):finds[AT-1]);
         }
         if(ALL){
             for(int i=0;i<counter;i++){
@@ -167,11 +171,11 @@ void find(){
                 printf(" , ");
                 printf("%ld",BYWORD?which_word(finds[i]):finds[i]);
             }
-            printf("\n");
+         //   printf("\n");
 
         }
         if(!ALL&&AT==-1&&!COUNT){
-            printf("%ld\n",BYWORD?which_word(finds[0]):finds[0]);
+            printf("%ld",BYWORD?which_word(finds[0]):finds[0]);
         }
 
 
@@ -589,7 +593,7 @@ void choose(char command[]){
     do{
         c=getchar();
     }while(c!='\n');
-    printf("Invalid entery!\n");
+    printf("Invalid entery!");
     }
 }
 

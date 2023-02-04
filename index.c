@@ -60,6 +60,7 @@ while(1){
     }while(c!='\n');
     printf("Invalid entery!\n");
     }
+    printf("\n");
 
 }
 

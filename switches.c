@@ -29,3 +29,4 @@ int y;
 char *edited;
 int have_file_name;
 int have_saved=0;
+char *output;
