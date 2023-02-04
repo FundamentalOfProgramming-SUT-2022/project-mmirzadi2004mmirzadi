@@ -193,19 +193,19 @@ void replace(){
     int counter=find_all(finds);
 
     if(AT==0){
-        printf("Wrong at input!\n");
+        printf("Wrong at input!");
         return;
     }else if(AT>(counter)){
-        printf("I could not find that much!\n");
+        printf("I could not find that much!");
         return;
     }
     if(AT!=-1&&ALL){
-        printf("You can't use both AT and ALL!\n");
+        printf("You can't use both AT and ALL!");
         return;
     }
     if(AT!=-1){
         replace_str(finds,AT-1,counter);
-        printf("The phrase replaced successfuly!\n");
+        printf("The phrase replaced successfuly!");
         return;
 
     }
@@ -218,11 +218,11 @@ void replace(){
 
             replace_str(finds,0,counter);
         }
-        printf("Replaced all phrases!\n");
+        printf("Replaced all phrases!");
         return;
     }
         replace_str(finds,0,counter);
-        printf("The phrase replaced successfuly!\n");
+        printf("The phrase replaced successfuly!");
         return;
 }
 
@@ -460,7 +460,7 @@ void indent(){
     edited=edited2;
    // printf("     sadklfj   ");
     save_edited();
-    printf("Success!\n");
+    printf("Success!");
 return;
 }
 
