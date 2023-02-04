@@ -951,6 +951,13 @@ void normalmode(){
                 normalmode();
                 }
                 check=1;
+            }else if(!strcmp(command,"indent")){
+                x1=wherex(); y1=wherey();
+                Bindent(edited);
+                save_edited();
+                print_line_to_line(edited,1+Y,26+Y,"NORMAL",1);
+                gotoxy(x1,y1);
+                normalmode();
             }else{
              //   printf("%d",!strcmp(command,"createfile"));
                 choose(command);
