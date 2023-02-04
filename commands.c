@@ -13,10 +13,7 @@ void createfile(){
 
         return;
     }
-    if(!make_dirs()){
-        printf("Worng directory!\n");
-        return;
-    }
+
     if(Bcreatefile()){
     printf("File successfully created!\n");
     return;
@@ -57,34 +54,9 @@ void removestr(int c){
     if(file_not_exists()){
         return;
     }
-    long pos=find_pos();
-    if(pos<0){
-    printf("The position not found!\n");
-    return;
-    }
-    int length=get_file_str();
-    if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
-            printf("Not valid size!\n");
+    if(!Bremovestr()){
         return;
     }
-
-    edited=malloc(length-SSIZE);
-    if(DIRECTION){
-        for(int i=0;i<pos;i++){
-            edited[i]=in_file[i];
-        }
-        for(int i=0;i<(length-pos-SSIZE);i++){
-            edited[i+pos]=in_file[pos+SSIZE+i];
-        }
-    }else{
-        for(int i=0;i<pos-SSIZE;i++){
-            edited[i]=in_file[i];
-        }
-        for(int i=0;i<(length-pos);i++){
-            edited[i+pos-SSIZE]=in_file[pos+i];
-        }
-    }
-    edited[length-SSIZE]='\0';
     save_edited();
     if(c)
     printf("Removed successfully!\n");
@@ -365,7 +337,7 @@ void indent(){
     edited=malloc(length*2);
     long k=0;
 
-    for(int i=0;i<length;i++){
+    for(int i=0;i<strlen(SFILE);i++){
         if(in_file[i]=='{'){
 
             if(i&&in_file[i-1]!=' '){
@@ -406,10 +378,18 @@ void indent(){
             }
         }
         else if(in_file[i]=='}'){
-                if(i&&in_file[i-1]!='\n'){
+                int s=1;
+                while(i&in_file[i-s]==' '){
+                    k--;
+                    s++;
+                }
+
+                if(i&&edited[k-1]!='\n'){
+                   //     printf("_____%c_____",in_file[i-1]);
                     edited[k]='\n';
                     k++;
                 }
+
                 if(in_file[i+1]!='\n'){
                     edited[k]=in_file[i];
                     k++;
@@ -423,6 +403,7 @@ void indent(){
     }
 
     edited[k]='\0';
+ //   printf("%s\n",edited);
     char *edited2;
     edited2=malloc(strlen(edited)+1000);
     k=0;
@@ -435,6 +416,7 @@ void indent(){
     int space[1000];
 
     for(int i=m;i<strlen(edited);i++){
+
         if(edited[i]=='{'){
             kroshnum+=4;
             upordown=1;
@@ -467,9 +449,12 @@ void indent(){
 
             }
         }
-    }
+        }
+
     edited2[k]='\0';
-    strcpy(edited,edited2);
+
+    edited=edited2;
+   // printf("     sadklfj   ");
     save_edited();
     printf("Success!\n");
 return;
@@ -557,11 +542,66 @@ return;
 
 // faze 2
 
+void visualmode();
+void insertmode();
+void normalmode();
+void choose();
+
+void choose(char command[]){
+    //char command[50];
+    //scanf("%s",command);
+    char c;
+    have_got_switch=0;
+    first_in_file=1;
+    //scanf("%s",command);
+    if(!strcmp(command,"createfile")){
+        createfile();
+    }
+    else if(!strcmp(command,"insertstr")){
+        insert(1);
+    }else if(!strcmp(command,"cat")){
+        cat();
+    }else if(!strcmp(command,"removestr")){
+        removestr(1);
+    }else if(!strcmp(command,"copystr")){
+        copystr();
+    }else if(!strcmp(command,"cutstr")){
+        cutstr();
+    }else if(!strcmp(command,"pastestr")){
+        pastestr();
+    }else if(!strcmp(command,"find")){
+        find();
+    }else if(!strcmp(command,"replace")){
+        replace();
+    }else if(!strcmp(command,"grep")){
+        grep();
+    }else if(!strcmp(command,"compare")){
+        compare();
+    }else if(!strcmp(command,"auto-indent")){
+        indent();
+    }else if(!strcmp(command,"undo")){
+        undo();
+    }else if(!strcmp(command,"tree")){
+        tree();
+    }else if(!strcmp(command,"vim")){
+        vim();
+    }else if(!strcmp(command,"uuu")){
+        uuu();
+    }else{
+    do{
+        c=getchar();
+    }while(c!='\n');
+    printf("Invalid entery!\n");
+    }
+}
+
 
 void vim(){
+
     int check;
-    while(1){
-    int check=get_input(SFILE);
+
+
+    check=get_input(SFILE);
 
     if(check==' '){
         printf("Wrong input!\n");
@@ -574,14 +614,12 @@ void vim(){
     strcpy(root,"root/");
     strcat(root,SFILE);
     strcpy(SFILE,root);
-    break;
+    have_file_neme=1;
     }else{
-    printf("Enter your file name.\n");
-
-    }
+        strcpy(SFILE,"new.txt");
+        have_file_neme=0;
     }
     if(!file_exists1()){
-
         Bcreatefile();
     }
     clrscr();
@@ -591,7 +629,7 @@ void vim(){
     }
 
     if(file_exists1()){
-        print_line_to_line(in_file,1,27);
+        print_line_to_line(in_file,1,26,"NORMAL",1); //0 normal 1 visual 2 insert
     }
     y=wherey();
   //  printf("%d",y);
@@ -605,27 +643,84 @@ void vim(){
 
     textcolor(WHITE);
     textbackground(BLUE);
-    gotoxy(1,29);
+    gotoxy(1,28);
     cprintf("NORMAL");
     textbackground(BLACK);
-    printf("  %s",SFILE);
+  //  print_in_pos(SFILE+5,20,28);
     gotoxy(1,1);
     char c;
     edited=malloc(strlen(in_file));
     strcpy(edited,in_file);
-    label:
+        for(int i=0;i<4;i++){
+
+            tool=strlen(edited);
+
+            edited[tool]='\n';
+            edited[tool+1]=' ';
+            edited[tool+2]=' ';
+            edited[tool+3]='\0';
+        }
     strcpy(in_file,edited);
+    visualmode();
+
+
+return;
+}
+
+
+void visualmode(){
+    char c;
+    int x1,y1;
+    print_in_color("  VISUAL  ",WHITE,BLUE,1,28);
+  //  print_in_pos(SFILE+5,20,28);
+    int selected=0;
+    long pos1,pos2;
     while(1){
             textcolor(BLUE);
 
             c=getch();
             if(c==13){
-                gotoxy(1,30);
+                gotoxy(1,29);
+                normalmode();
 
-                break;
+            }else if(c=='s'){
+                if(!selected){
+                    SPOS[0]=wherey(); SPOS[1]=wherex()-1;
+                    pos1=find_pos();
+                    selected=1;
+                }else{
+                    SPOS[0]=wherey(); SPOS[1]=wherex()-1;
+                    pos2=find_pos();
+                    selected=0;
+                        x1=wherex(); y1=wherey();
+                        SSIZE=pos2-pos1;
+                        if(SSIZE<0){
+                            SSIZE=(-1)*SSIZE;
+                            DIRECTION=1;
+                        }else DIRECTION=0;
+
+
+                        select_line_to_line(edited,1+Y,27+Y,"VISUAL",1,pos1,pos2);
+                        gotoxy(x1,y1);
+                 //   printf("__________%ld  %ld________",pos2,pos1);
+                    c=getch();
+                    if(c=='d'){
+
+                        copy_str();
+                        Bremovestr();
+
+                      print_line_to_line(edited,1+Y,27+Y,"VISUAL",1);
+                      normalmode();
+                      //printf("%s\n",copied);
+                      gotoxy(x1,y1);
+                    }else if(c=='y'){
+                        copy_str();
+                        normalmode();
+                    }
+                }
             }
             if(c=='e'){
-                break;
+                insertmode();
             }
 
         move_on_screen(c,y);
@@ -633,83 +728,244 @@ void vim(){
                 y++;
             }
     }
+return;
+}
+
+void insertmode(){
     int y1,x1;
+    char c;
     //edit mode
-    if(c=='e'){
+
             y1=wherey();
             x1=wherex();
-            gotoxy(1,29);
-            textbackground(YELLOW);
-            textcolor(BLACK);
-            cprintf("EDITED MODE");
-            textbackground(BLACK);
-            textcolor(WHITE);
-            printf("   %s",SFILE+5);
+            SPOS[0]=wherey(); SPOS[1]=wherex()-1;
+            print_in_color("  INSERT  ",WHITE,BLUE,1,28);
+            print_in_pos(SFILE+5,20,28);
+
+            long pos;
             gotoxy(x1,y1);
+            if(y1>27){
+                gotoxy(1,1);
+            }
+
+            pos=find_pos2(edited);
+           // printf("___%ld___",pos);
             while(1){
 
             c=getch();
 
             if(c==':'||c=='/'){
-                break;
-            }
+                normalmode();
+            }else
             if(c=='\\'){
-               goto label;
+               visualmode();
             }
-            SPOS[0]=wherey(); SPOS[1]=wherex()-1;
-            insert_char(c);
+
+            insert_char(pos,c);
+            pos++;
             y1=wherey();
             x1=wherex();
-            print_line_to_line(edited,1+Y,27+Y);
-            gotoxy(x1+1,y1);
+
+            gotoxy(1,wherey());
+            print_line_to_line(edited,wherey()+Y,wherey()+Y,"insert",0);
+            if(c!=8){
+            gotoxy(x1+1,y1);}else{
+            gotoxy(x1-1,y1);
+            }
             }
 
-    }
 
+return;
+}
 
-    textcolor(WHITE);
-    gotoxy(1,30);
-    printf(":command :");
+void normalmode(){
+    int check;
+    int x1,y1;
+    char c;
+    print_in_color(" NORMAL ",WHITE,BLUE,1,28);
+   textcolor(WHITE);
+    gotoxy(1,29);
+    printf(":command :                                                                                             ");
+    gotoxy(11,29);
     char command[15];
+   // command=malloc(15);
     int commanda=0;
     while(1){
             check=0;
             commanda=0;
+            textcolor(WHITE);
+            gotoxy(1,29);
+            printf(":command :");
         while(1){
-            c=getchar();
-            if(c=='p'){
-                gotoxy(1,30);
+            c=getch();
+       /*     if(c=='p'){
+                gotoxy(1,29);
                 printf("                  ");
                 textcolor(1);
                 gotoxy(1,1);
-                goto label;
+                visualmode();
+            } */
+            if(c==8){
+                if(wherex()>11){
+                   // gotoxy(wherex()-1,wherey());
+                    gotoxy(wherex()-1,wherey());
+                    printf(" ");
+                    gotoxy(wherex()-1,wherey());
+                    command[commanda-1]='\0';
+                    commanda--;
+                }
+                continue;
             }
-            if(c=='\n'||c==':'){
 
+
+            if(c==13||c==':'||c==' '){
+                gotoxy(wherex()+1,wherey());
                 break;
             }
+            if(c=='='){
+                x1=wherex(); y1=wherey();
+                Bindent(edited);
+                save_edited();
+                print_line_to_line(edited,1+Y,26+Y,"NORMAL",1);
+                gotoxy(x1,y1);
+                normalmode();
+            }
+            printf("%c",c);
             command[commanda]=c;
-
+            //printf("-%c-",c);
             commanda++;
 
         }
+        command[commanda]='\0';
+
+
             if(!strcmp(command,"save")){
+                if(have_file_neme){
+                    save_edited();
+                }else{
+                    gotoxy(11,29);
+                    printf("add file name:                                      ");
+                    gotoxy(25,29);
+                    get_input(SFILE);
+                    gotoxy(35,29);
+                           char root[50];
+                            strcpy(root,"root/");
+                            strcat(root,SFILE);
+                            strcpy(SFILE,root);
+                    if(Bcreatefile()){
+                         //   printf("____%s__",edited);
+                        save_edited();
+                    }else{
+                        check=-1;
+                    }
+                }
+
+                check=1;
+            }else
+            if(!strcmp(command,"i")){
+                insertmode();
+                check=1;
+            } else
+            if(!strcmp(command,"v")){
+                gotoxy(1,1);
+                visualmode();
+                check=1;
+            }else if(!strcmp(command,"p")){
+
+                printf("%s",copied);
+                check=0;
+            }else if(!strcmp(command,"saveas")){
+                get_input(SFILE);
+                    char root[115];
+                    strcpy(root,"root/");
+                    long kroshnum=0;
+                    strcat(root,SFILE);
+                    strcpy(SFILE,root);
                 save_edited();
                 check=1;
+            }else if(!strcmp(command,"open")){
+                save_edited();
+                vim();
+            }else if(!strcmp(command,"undo")){
+                    long length=get_undo_file_str();
+                    edited=malloc(length);
+                    strcpy(edited,in_undo_file);
+                    x1=wherex(); y1=wherey();
+                    get_file_str();
+                    save_edited();
+                    print_line_to_line(edited,1+Y,26+Y,"NORMAL",1);
+                    gotoxy(x1,y1);
+                    normalmode();
+            }else if(command[0]=='/'){
+                    strcpy(SSTR,command+1);
+                    long finds[100];
+                    int counter=find_all(finds);
+                    x1=wherex(); y1=wherey();
+                    //long finds2[100];
+                    int num=0;
+                   // c=getch();
+                   c='n';
+                        while(num<counter){
+
+                            select_line_to_line(edited,1+Y,26+Y,"NORMAL",1,finds[num],finds[num]+strlen(SSTR));
+                            gotopos(edited,finds[num]);
+                          //  printf("_____%d___",finds[num]);
+                            c=getch();
+                            if(c=='n'){
+                                num++;
+                            }else{
+                                print_line_to_line(edited,1+Y,26+Y,"NORMAL",1);
+                                gotoxy(x1,y1);
+                                normalmode();
+                            }
+
+                        }
+                            print_line_to_line(edited,1+Y,26+Y,"NORMAL",1);
+                            gotoxy(x1,y1);
+                            normalmode();
+
+            }else if(!strcmp(command,"replace")){
+               // printf("jfjfjksdjafkdfsja");
+                replace_vim();
+                //visualmode();
+                x1=wherex(); y1=wherey();
+                print_line_to_line(edited,1+Y,26+Y,"NORMAL",1);
+                gotoxy(x1,y1);
+                if(getch()){
+                normalmode();
+                }
+                check=1;
+            }else{
+             //   printf("%d",!strcmp(command,"createfile"));
+                choose(command);
+                gotoxy(11,29);
+
             }
-            if(check){
+            x1=wherex(); y1=wherey();
+            if(check==1){
+
+                gotoxy(1,30);
                 textcolor(GREEN);
                 cprintf("SUCCESS!");
 
                 textcolor(WHITE);
-                if(getch()){
-                    gotoxy(1,31);
-                    cprintf("                                       ");
-                  gotoxy(11,30);
-                    cprintf("                                       ");
-                    gotoxy(11,30);
-                }
+                gotoxy(x1,y1);
+            }else if(check==-1){
+                gotoxy(1,30);
+                textcolor(RED);
+                cprintf("FAIL!");
+
+                textcolor(WHITE);
+                gotoxy(x1,y1);
             }
+                if(getch()){
+                    gotoxy(1,30);
+                    cprintf("                                       ");
+                  gotoxy(11,29);
+                    cprintf("                                       ");
+                    gotoxy(11,29);
+                }
+
 
     }
 

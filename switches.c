@@ -27,3 +27,4 @@ long Y;
 int y;
 
 char *edited;
+int have_file_neme;

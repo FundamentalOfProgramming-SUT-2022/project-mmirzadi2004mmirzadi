@@ -249,23 +249,30 @@ return length;
 long get_undo_file_str(){
 
 
-    long length;
+    long length=0;
     SFILE[3]='h';
-    FILE * nfile = fopen (SFILE, "rb");
+    FILE * nfile = fopen (SFILE, "r");
     SFILE[3]='t';
+    in_undo_file=malloc(1000);
+    char str[200];
     if (nfile)
     {
-      fseek (nfile, 0, SEEK_END);
-      length = ftell (nfile);
-      fseek (nfile, 0, SEEK_SET);
-      in_undo_file = (char*)malloc (length);
-      if (in_undo_file)
-      {
-        fread (in_undo_file, length,1, nfile);
-      }
-      fclose (nfile);
+     // fseek (nfile, 0, SEEK_END);
+    //  length = ftell (nfile);
+    //  fseek (nfile, 0, SEEK_SET);
+char ch;
+    while (fscanf(nfile, "%c",
+                  &in_undo_file[length])
+           == 1){
+
+        length++;
+           }
+   fclose(nfile);
+
+     // fclose (nfile);
     }
     in_undo_file[length]='\0';
+
 
 return length;
 }
@@ -305,6 +312,41 @@ long find_pos(){
     }
 }
 
+long find_pos2(char str[]){
+   // long length=get_file_str();
+
+    long counter=1,save=-1;
+    if(SPOS[0]==1&&SPOS[1]==0){
+        return 0;
+    }
+    for(int i=0;i<strlen(str);i++){
+        if(str[i]=='\n'){
+            counter++;
+        }
+        if(counter>=(SPOS[0])){
+            save=i;
+            break;
+        }
+    }
+    if(save==-1){
+
+        return -1;
+    }
+  //  printf("__%d__",save);
+    for(int i=0;i<SPOS[1];i++){
+        if(str[i+save+1]=='\n'||i+save+1>=strlen(str)){
+
+            return -1;
+        }
+    }
+    if(SPOS[0]==1)
+    return SPOS[1]+save;
+    else{
+    return SPOS[1]+save+1;
+    }
+}
+
+
 void copy_str(){
     copied=(char*)malloc(SSIZE*sizeof(char));
     int pos=find_pos();
@@ -317,6 +359,7 @@ void copy_str(){
                 copied[i]=in_file[pos-SSIZE+i];
             }
         }
+        copied[SSIZE]='\0';
 
 return;
 }
@@ -526,13 +569,23 @@ long which_word(long pos){
 
 
 //-----------------------------------
-void print_line_to_line(char str[],int a,int b);
+void print_line_to_line(char str[],int a,int b,char mode[],int kol);
+
+void print_in_pos(char text[],int x2,int y2){
+     int y1=wherey();
+     int x1=wherex();
+    gotoxy(x2,y2);
+    printf("%s",text);
+
+    gotoxy(x1,y1);
+return;
+}
 
 void print_in_color(char text[],int color,int bgcolor,int x2,int y2){
      int y1=wherey();
      int x1=wherex();
-    textcolor(1);
-    textbackground(1);
+    textcolor(color);
+    textbackground(bgcolor);
     gotoxy(x2,y2);
     cprintf("%s",text);
     textbackground(BLACK);
@@ -540,6 +593,8 @@ void print_in_color(char text[],int color,int bgcolor,int x2,int y2){
     gotoxy(x1,y1);
 return;
 }
+
+
 
 int move_on_screen(char a,int y){
 
@@ -555,7 +610,7 @@ int move_on_screen(char a,int y){
             if(wherey()<5&&Y>0){
 
             Y--;
-            print_line_to_line(in_file,1+Y,27+Y);
+            print_line_to_line(in_file,1+Y,26+Y,"visual",1);
             gotoxy(1,y1);
            // printf("->\n");
 
@@ -583,12 +638,17 @@ int move_on_screen(char a,int y){
             if(wherey()>=24){
 
             Y++;
-            print_line_to_line(in_file,1+Y,27+Y);
+            print_line_to_line(in_file,1+Y,26+Y,"visual",1);
             gotoxy(1,28);
            // printf("->\n");
 
             }else if(Y==0&&y-wherey()<5){
             gotoxy(1,y-1);
+            long tool=strlen(edited);
+            edited[tool]='\n';
+            edited[tool+1]=' ';
+            edited[tool+2]=' ';
+            edited[tool+3]='\0';
              //   printf("_______%d______",y);
             printf("\n->");
 
@@ -621,12 +681,14 @@ int move_on_screen(char a,int y){
 
 }
 
-void print_line_to_line(char str[],int a,int b){
+void print_line_to_line(char str[],int a,int b,char mode[],int kol){
     int y1,x1,check;
     y1=wherey();
-    x1=wherex(),check=0;
+    x1=wherex();check=0;
+    if(kol){
     gotoxy(1,1);
     clrscr();
+    }
     textcolor(WHITE);
     long length=strlen(str);
     long count=1,i=0,lim=0;
@@ -667,24 +729,113 @@ void print_line_to_line(char str[],int a,int b){
 
     }
   //  printf("__%d__",wherey());
-     y1=wherey();
-     x1=wherex();
+    y1=wherey();
+    x1=wherex();
     textcolor(WHITE);
     textbackground(BLUE);
-    gotoxy(1,29);
-    cprintf("NORMAL");
+    gotoxy(1,28);
+    cprintf("%s",mode);
     textbackground(BLACK);
     printf("  %s",SFILE+5);
     gotoxy(x1,y1);
 return;
 }
 
-int insert_char(char a){
-    int pos=find_pos();
+void select_line_to_line(char str[],int a,int b,char mode[],int kol,long c,long d){
+    int y1,x1,check;
+    //long shomare=0;
+    y1=wherey();
+    x1=wherex();check=0;
+    if(kol){
+    gotoxy(1,1);
+    clrscr();
+    }
+    textcolor(WHITE);
+    long length=strlen(str);
+    long count=1,i=0,lim=0;
+    long h;
+    if(d<c){
+        h=d;
+        d=c;
+        c=h;
+    }
+    while(count<=b){
+
+                if(i==c){
+                    textbackground(BLUE);
+                }else if(i==d){
+                    textbackground(BLACK);
+
+                }
+
+        if(i>=length){
+            textcolor(BLUE);
+                if(check){
+                    printf("\n");
+                    check=0;
+                    b++;
+                }
+            while((lim<4||y>=24)){
+
+                if(count>=a&&count<=b){
+                        cprintf("->\n");
+
+                        lim++;
+                }
+                count++;
+                if(count>b){
+                    break;
+                }
+            }
+
+            textcolor(WHITE);
+            break;
+        }
+
+        if(count>=a){
+                check=1;
+            printf("%c",str[i]);
+        }
+        if(str[i]=='\n'){
+            count++;
+        }
+            i++;
+
+    }
+  //  printf("__%d__",wherey());
+    y1=wherey();
+    x1=wherex();
+    textcolor(WHITE);
+    textbackground(BLUE);
+    gotoxy(1,28);
+    cprintf("%s",mode);
+    textbackground(BLACK);
+    printf("  %s",SFILE+5);
+    gotoxy(x1,y1);
+return;
+}
+
+int insert_char(long pos,char a){
+    //int pos=find_pos();
 
     if(pos<0){
 
         return 0;
+    }
+    if(a==8){
+        char* edited2;
+        edited2=malloc(strlen(edited));
+        for(int i=0;i<pos-1;i++){
+            edited2[i]=edited[i];
+        }
+        edited2[pos]=a;
+        for(int i=0;i<(strlen(edited)-pos-1);i++){
+            edited2[pos+i-1]=edited[i+pos];
+        }
+        edited2[strlen(edited)-1]='\0';
+
+        strcpy(edited,edited2);
+            return 1;
     }
     char* edited2;
     edited2=malloc(strlen(edited)+2);
@@ -699,3 +850,23 @@ int insert_char(char a){
 
     strcpy(edited,edited2);
 }
+
+
+void gotopos(char str[],long pos){
+    int line=1;
+    long x;
+    for(int i=0;i<pos;i++){
+            if(str[i]=='\n'){
+                line++;
+                x=i;
+            }
+    }
+    if(line==1){
+        x=0;
+    }
+    gotoxy(pos-x,line);
+  //  printf("---%d---",pos-x);
+return;
+}
+
+
