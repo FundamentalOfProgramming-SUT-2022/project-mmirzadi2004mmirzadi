@@ -881,7 +881,31 @@ return;
 
 void saveo(char str[]){
     output=malloc(strlen(str));
-    strcmp(output,str);
+    strcpy(output,str);
+
 
 return;
+}
+void savec(char str[]){
+    char *str2=malloc(strlen(str)+strlen(output));
+    strcpy(str2,output);
+    strcat(str2,str);
+    strcpy(output,str2);
+return;
+}
+
+char* number_to_string(int a){
+    char *x=malloc(10);
+    char *y=malloc(10);
+    int i=0;
+    while(a>0){
+        x[i]=a%10;
+        a/=10;
+        i++;
+    }
+    x[i]='\0';
+    for(int j=0;j<i;i++){
+        y[i-j-1]=x[j];
+    }
+return y;
 }

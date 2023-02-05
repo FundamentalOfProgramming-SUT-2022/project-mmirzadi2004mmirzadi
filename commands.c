@@ -16,13 +16,13 @@ void createfile(){
 
     if(Bcreatefile()){
     printf("File successfully created!");
-  //  saveo("File successfully created!\n");
+    saveo("File successfully created!\n");
 
     return;
     }
 
     printf("Something went wrong!");
-  //  saveo("Something went wrong!\n");
+    saveo("Something went wrong!\n");
 }
 
 void insert(int c){
@@ -47,6 +47,7 @@ void cat(){
     if(!Bcat()){
         printf("Something went wrong.");
     }
+    output=in_file;
     printf("\n");
 return;
 }
@@ -63,6 +64,7 @@ void removestr(int c){
     save_edited();
     if(c)
     printf("Removed successfully!");
+    saveo("Removed successfully!");
 return;
 }
 
@@ -75,15 +77,18 @@ void copystr(){
     long pos=find_pos();
     if(pos<0){
     printf("The position not found!");
+    saveo("The position not found!");
     return;
     }
 
     if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
             printf("Not valid size!");
+            saveo("Not valid size!");
         return;
     }
     copy_str();
     printf("String copied.");
+    saveo("String copied.");
 return;
 }
 
@@ -93,17 +98,20 @@ void cutstr(){
     long pos=find_pos();
     if(pos<0){
     printf("The position not found!");
+    saveo("The position not found!");
     return;
     }
 
     if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
             printf("Not valid size!");
+            saveo("Not valid size!");
         return;
     }
     copy_str();
     removestr(0);
 
     printf("String cut.");
+    saveo("String cut.");
 
 
 return;
@@ -118,21 +126,24 @@ void pastestr(){
     long pos=find_pos();
     if(pos<0){
     printf("The position not found!");
+    saveo("The position not found!");
     return;
     }
 
     if(SSIZE==0||(DIRECTION&&SSIZE+pos>=length)||(!DIRECTION&&SSIZE>pos)){
             printf("Not valid size!");
+            saveo("Not valid size!");
         return;
     }
     if(copied==NULL){
         printf("Nothing have been copied!");
+        saveo("Nothing have been copied!");
         return;
     }
     strcpy(SSTR,copied);
 
     insert(0);
-    printf("Have pasted successfully!");
+    saveo("Have pasted successfully!");
 return;
 }
 
@@ -144,26 +155,36 @@ void find(){
     if(file_not_exists()){
         return;
     }
-    int counter;
+    int counter,counter1=0;
 
     counter=find_all(finds);
 
         if(!counter){
             printf("Nothing founded!");
+            saveo("Nothing founded!");
             return;
         }
         if(COUNT){
-            printf("COUNT -->> I found %d statements.",counter);
+            for(int i=0;i<counter;i++){
+                if(i==0||finds[i]!=finds[i-1]){
+                    counter1++;
+                }
+            }
+            printf("COUNT -->> I found %d statements.",BYWORD?counter1:counter);
+
             return;
         }
 
         if(AT==0){
             printf("AT -->> Incurrect input!");
+            saveo("AT -->> Incurrect input!");
 
         }else if(AT>counter){
             printf("AT -->> I could not find that much!");
+            saveo("AT -->> I could not find that much!");
         }else if(AT>0){
             printf("AT -->> THE %d th statement is on the %d position.",AT,BYWORD?which_word(finds[AT-1]):finds[AT-1]);
+
         }
         if(ALL){
             for(int i=0;i<counter;i++){
@@ -194,18 +215,22 @@ void replace(){
 
     if(AT==0){
         printf("Wrong at input!");
+        saveo("Wrong at input!");
         return;
     }else if(AT>(counter)){
         printf("I could not find that much!");
+        saveo("I could not find that much!");
         return;
     }
     if(AT!=-1&&ALL){
         printf("You can't use both AT and ALL!");
+        saveo("You can't use both AT and ALL!");
         return;
     }
     if(AT!=-1){
         replace_str(finds,AT-1,counter);
         printf("The phrase replaced successfuly!");
+        saveo("The phrase replaced successfuly!");
         return;
 
     }
@@ -219,10 +244,12 @@ void replace(){
             replace_str(finds,0,counter);
         }
         printf("Replaced all phrases!");
+        saveo("Replaced all phrases!");
         return;
     }
         replace_str(finds,0,counter);
         printf("The phrase replaced successfuly!");
+        saveo("The phrase replaced successfuly!");
         return;
 }
 
@@ -238,6 +265,7 @@ void grep(){
     }
     if(strlen(SSTR)==0){
         printf("Your sting can't be empty!\n");
+        saveo("Your sting can't be empty!\n");
         return;
     }
 
@@ -245,6 +273,7 @@ void grep(){
     int check,linecount;
     if(C&L){
             printf("You can't use both -c and -l");
+            saveo("You can't use both -c and -l");
             return;
     }
     if(!L&&!C){
@@ -262,8 +291,15 @@ void grep(){
                 }
                 shomare_line++;
             }
+            int firsttime=1;
                 if(counter>0){
                     printf("%s : ",SFILES[i]+5);
+                    if(firsttime){
+                        saveo(SFILES[i]+5);
+                        firsttime=0;
+                    }else{
+                        savec(SFILES[i]+5);
+                    }
                 }
 
             shomare_line=1;
@@ -273,6 +309,8 @@ void grep(){
 
                 if(exists_in_str(line,SSTR)){
                     printf("%s\n",line);
+                    savec(line);
+                    savec("\n");
                 }
                 shomare_line++;
             }
@@ -297,6 +335,7 @@ void grep(){
 
             }
             printf("%d\n",counter);
+            saveo(number_to_string(counter));
         return;
 
     }
@@ -314,8 +353,15 @@ void grep(){
                 }
                 shomare_line++;
             }
+            int firsttime=1;
                 if(counter>0){
                     printf("%s\n",SFILES[i]+5);
+                    if(firsttime){
+                        firsttime=0;
+                        saveo(SFILES[i]+5);
+                    }else{
+                        savec(SFILES[i]+5);
+                    }
                 }
             }
 
@@ -330,6 +376,7 @@ void indent(){
     char check=get_input(SFILE);
     if(check==' '){
         printf("Wrong input!\n");
+        saveo("Wrong input!\n");
         return;
     }
     char root[115];
@@ -461,6 +508,7 @@ void indent(){
    // printf("     sadklfj   ");
     save_edited();
     printf("Success!");
+    saveo("Success!");
 return;
 }
 
@@ -529,6 +577,7 @@ void undo(){
 
     save_edited();
     printf("The file returned to previous state.\n");
+    saveo("The file returned to previous state.\n");
 return;
 }
 
@@ -594,7 +643,13 @@ void choose(char command[]){
         c=getchar();
     }while(c!='\n');
     printf("Invalid entery!");
+
     }
+    edited=output;
+    strcpy(SFILE,"new.txt");
+    save_edited();
+    print_line_to_line(edited,1,26,"NORMAL",1);
+    normalmode();
 }
 
 
